@@ -95,7 +95,7 @@ class wsServer {
 			.filter(g => JSON.parse(g.integrantes).includes(data))
 			.map(g => g.id)
 
-		// Historial: canal Todos + chats privados + grupos donde participa
+		// Historial
 		let mensajes = []
 		if (idsGrupos.length > 0) {
 			const placeholders = idsGrupos.map(() => '?').join(',')
@@ -122,7 +122,7 @@ class wsServer {
 		const todosUsuarios = await query(`SELECT nombre FROM usuarios`)
 		this.MSG(ws, "TODOS_USUARIOS", todosUsuarios.map(u => u.nombre))
 
-		// Enviar grupos donde participa (reusar todosGrupos ya calculado)
+		// Enviar grupos donde participa 
 		const misGrupos = todosGrupos.filter(g => {
 			const integrantes = JSON.parse(g.integrantes)
 			return integrantes.includes(data)
@@ -153,15 +153,14 @@ class wsServer {
 		const esTodos = canal === "Todos"
 		const hora = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 
-		// Determinar el chatId igual que en el cliente
 		let chatId
 		if (esTodos) {
 			chatId = "Todos"
 		} else if (receptor.length === 1) {
-			// Chat privado: clave ordenada alfabéticamente
+			// Chat privado
 			chatId = [emisor, receptor[0]].sort().join("|")
 		} else {
-			// Grupo: el canal es el id del grupo
+			// Grupo
 			chatId = canal
 		}
 
