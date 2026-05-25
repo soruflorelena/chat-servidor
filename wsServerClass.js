@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws'
-import mariadb from 'mariadb'
+import mariadb from 'mariadb/promise'
 
 // ─── CONEXIÓN A BASE DE DATOS ────────────────────────────────────────────────
 
