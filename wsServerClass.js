@@ -89,23 +89,41 @@ class wsServer {
 
 		this.BROADCAST_CONECTADOS()
 
-		// Enviar historial de mensajes al cliente que se conecta
-		const mensajes = await query(
-			`SELECT * FROM mensajes WHERE chat = 'Todos'
-			 OR chat LIKE CONCAT('%', ?, '%')
-			 ORDER BY id ASC`,
-			[data]
-		)
+		// Obtener grupos donde participa para incluir sus mensajes en el historial
+		const todosGrupos = await query(`SELECT * FROM grupos`)
+		const idsGrupos = todosGrupos
+			.filter(g => JSON.parse(g.integrantes).includes(data))
+			.map(g => g.id)
+
+		// Historial: canal Todos + chats privados + grupos donde participa
+		let mensajes = []
+		if (idsGrupos.length > 0) {
+			const placeholders = idsGrupos.map(() => '?').join(',')
+			mensajes = await query(
+				`SELECT * FROM mensajes
+				 WHERE chat = 'Todos'
+				 OR chat LIKE CONCAT('%', ?, '%')
+				 OR chat IN (${placeholders})
+				 ORDER BY id ASC`,
+				[data, ...idsGrupos]
+			)
+		} else {
+			mensajes = await query(
+				`SELECT * FROM mensajes
+				 WHERE chat = 'Todos'
+				 OR chat LIKE CONCAT('%', ?, '%')
+				 ORDER BY id ASC`,
+				[data]
+			)
+		}
 		this.MSG(ws, "HISTORIAL", mensajes)
 
-		// Enviar todos los usuarios históricos para que el cliente
-		// pueda mostrar perfiles aunque estén desconectados
+		// Enviar todos los usuarios históricos
 		const todosUsuarios = await query(`SELECT nombre FROM usuarios`)
 		this.MSG(ws, "TODOS_USUARIOS", todosUsuarios.map(u => u.nombre))
 
-		// Enviar grupos donde participa
-		const grupos = await query(`SELECT * FROM grupos`)
-		const misGrupos = grupos.filter(g => {
+		// Enviar grupos donde participa (reusar todosGrupos ya calculado)
+		const misGrupos = todosGrupos.filter(g => {
 			const integrantes = JSON.parse(g.integrantes)
 			return integrantes.includes(data)
 		})
