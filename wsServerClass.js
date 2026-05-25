@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws'
-import mariadb from 'mariadb'
+import { createPool } from 'mariadb'
 
 // ─── CONEXIÓN A BASE DE DATOS ────────────────────────────────────────────────
 
