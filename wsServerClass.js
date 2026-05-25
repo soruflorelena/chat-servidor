@@ -1,16 +1,15 @@
 import { WebSocketServer } from 'ws'
-import { createPool } from 'mariadb'
+import mariadb from 'mariadb'
 
 // ─── CONEXIÓN A BASE DE DATOS ────────────────────────────────────────────────
 
-const pool = createPool({
+const pool = mariadb.createPool({
 	host:     process.env.DB_HOST,
 	port:     Number(process.env.DB_PORT) || 3306,
 	user:     process.env.DB_USER,
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME,
-	connectionLimit: 5,
-	allowPublicKeyRetrieval: true  // ← agregar esta línea
+	connectionLimit: 5
 })
 
 async function query(sql, params = []) {
@@ -98,6 +97,11 @@ class wsServer {
 			[data]
 		)
 		this.MSG(ws, "HISTORIAL", mensajes)
+
+		// Enviar todos los usuarios históricos para que el cliente
+		// pueda mostrar perfiles aunque estén desconectados
+		const todosUsuarios = await query(`SELECT nombre FROM usuarios`)
+		this.MSG(ws, "TODOS_USUARIOS", todosUsuarios.map(u => u.nombre))
 
 		// Enviar grupos donde participa
 		const grupos = await query(`SELECT * FROM grupos`)
