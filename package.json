@@ -1,0 +1,22 @@
+{
+	"name": "chat-servidor",
+	"version": "1.0.0",
+	"description": "Servidor WebSocket con MariaDB",
+	"author": "Flor Elena Solano Ruano",
+	"type": "module",
+	"main": "wsServerClass.js",
+	"scripts": {
+		"start": "node wsServerClass.js",
+		"dev":   "nodemon wsServerClass.js"
+	},
+	"dependencies": {
+		"mariadb": "^3.5.1",
+		"ws":      "^8.20.0"
+	},
+	"devDependencies": {
+		"nodemon": "^3.0.0"
+	},
+	"engines": {
+		"node": ">=18"
+	}
+}
